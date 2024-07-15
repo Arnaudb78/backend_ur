@@ -1,35 +1,54 @@
 import { Request, Response } from "express";
 import User from "../models/userModel";
-import { CreateUserDto, UserRole } from "../dto/userDto";
-import { CustomErrorInterface } from "../interfaces/customErrorInterface";
-import { BadRequestError } from "../utils/errorUtils";
+import bcrypt from "bcrypt";
 
 
 const register = async (req: Request, res: Response) => {
-    const { firstname, lastname, mail, password, rules, isNewsletter, accessToken, pic, role } = req.body;
+    if (!req.body) return res.status(400).send({ message: "User cannot be empty" });
+    const { firstname, lastname, mail, password, rules, newsletter, role } = req.body;
+    if (await User.findOne({ mail: mail })) return res.status(400).send({ message: "User already exists" });
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = new User({
+        firstname: firstname,
+        lastname: lastname,
+        mail: mail,
+        password: passwordHash,
+        rules: rules,
+        isNewsletter: newsletter,
+        role: role,
+    });
+    const userId = { userId: user._id };
 
-    
-    const createUserDto = new CreateUserDto(
-        firstname,
-        lastname,
-        mail,
-        password,
-        rules,
-        isNewsletter,
-        accessToken,
-        pic,
-        role as UserRole
-    );
+    await user.save();
 
-    const newUser = new User(createUserDto);
-    
-    try {
-        const savedUser = await newUser.save();
-        res.status(201).json(savedUser);
-    } catch (error) {
-        const customError = error as CustomErrorInterface;
-        res.status(customError.status || 400).json({ message: customError.message });
-    }
-}
+    res.status(201).json({ user});
+};
 
-export { register };
+const login = async (req: Request, res: Response) => {
+    if (!req.body) return res.status(400).send({ message: "User cannot be empty" });
+    const { mail, password } = req.body;
+
+    const user = await User.findOne({ mail: mail });
+    if (!user) return res.status(404).send({ message: "User not found" });
+
+    if (!(await bcrypt.compare(password, user.password!))) return res.status(409).send({ message: "Password is incorrect" });
+
+    const userId = { userId: user._id };
+
+    await user.save();
+
+    res.status(200).json({ user});
+};
+
+const deleteAccount = async (req: Request, res: Response) => {
+    if (!req.body) return res.status(400).send({ message: "User cannot be empty" });
+
+    const { mail } = req.body;
+    const user = await User.findOne({ mail });
+    if (!user) return res.status(403).send({ message: "User not found" });
+    await User.findByIdAndDelete(user._id);
+    res.status(204).send({ message: "User deleted" });
+};
+
+
+export { register, login, deleteAccount};

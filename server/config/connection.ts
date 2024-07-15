@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-// Connection to Mongoose
 
 function setupDBConnection() {
     const connectionString = process.env.CONNECTION_STRING;
