@@ -6,7 +6,7 @@ import bcrypt from "bcrypt";
 const register = async (req: Request, res: Response) => {
     if (!req.body) return res.status(400).send({ message: "User cannot be empty" });
     const { firstname, lastname, mail, password, rules, newsletter, role } = req.body;
-    if (await User.findOne({ mail: mail })) return res.status(400).send({ message: "User already exists" });
+    if (await User.findOne({ mail: mail })) return res.status(409).send({ message: "User already exists" });
     const passwordHash = await bcrypt.hash(password, 10);
     const user = new User({
         firstname: firstname,
@@ -15,10 +15,7 @@ const register = async (req: Request, res: Response) => {
         password: passwordHash,
         rules: rules,
         isNewsletter: newsletter,
-        role: role,
     });
-    const userId = { userId: user._id };
-
     await user.save();
 
     res.status(201).json({ user});
