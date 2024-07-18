@@ -15,9 +15,10 @@ const userSchema = new mongoose.Schema({
     isNewsletter: { type: Boolean, default: false },
     role: {
         type: String,
-        enum: [Role.ADMIN, Role.USER], 
+        enum: [Role.ADMIN, Role.USER],
         default: Role.USER,
     },
+    accessToken: { type: String },
 });
 
 export default mongoose.model("users", userSchema);
