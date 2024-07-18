@@ -20,7 +20,9 @@ const register = async (req: Request, res: Response) => {
         isNewsletter: newsletter,
     });
     const userId = user._id.toString();
+    const token = jwt.sign({ userId }, secretKey, { expiresIn: "24h" });
     const accessToken = jwt.sign({ userId }, secretKey, { expiresIn: "1h" });
+    user.token = token;
     user.accessToken = accessToken;
     await user.save();
 
@@ -55,4 +57,64 @@ const deleteAccount = async (req: Request, res: Response) => {
     res.status(204).send({ message: "User deleted" });
 };
 
-export { register, login, deleteAccount };
+const verifyToken = (token: string, expirationTimeInHours: number): boolean => {
+    let isExpired = false;
+    const dateNow = new Date();
+    const expirationTimeInSeconds = expirationTimeInHours * 60 * 60; // Convertir les heures en secondes
+
+    try {
+        const decoded = jwt.verify(token, secretKey) as { exp: number };
+        if (decoded.exp < dateNow.getTime() / 1000) {
+            isExpired = true;
+        } else {
+            const tokenAgeInSeconds = dateNow.getTime() / 1000 - decoded.exp;
+            if (tokenAgeInSeconds > expirationTimeInSeconds) {
+                isExpired = true;
+            }
+        }
+    } catch (err) {
+        isExpired = true;
+        console.log(err);
+    }
+
+    return isExpired;
+};
+
+const verify = async (req: Request, res: Response) => {
+    let admin = false;
+    const { accessToken } = req.body;
+
+    if (!accessToken) return res.status(400).send({ message: "Token is required" });
+
+    const user = await User.findOne({ accessToken: accessToken });
+    if (!user) return res.status(404).send({ message: "User not found" });
+    if (user.role === "admin") admin = true;
+
+    const isAccessTokenExpired = verifyToken(accessToken, 1);
+
+    if (!isAccessTokenExpired) {
+        return res.status(200).json({ accessToken: accessToken, admin });
+    }
+
+    const userToken = user.token;
+    if (!userToken) return res.status(404).send({ message: "Token not found" }); // Pirate
+
+    const isUserTokenExpired = verifyToken(userToken, 24);
+
+    if (!isUserTokenExpired && isAccessTokenExpired) {
+        const userId = { userId: user._id };
+        let newAccessToken;
+        try {
+            newAccessToken = jwt.sign(userId, secretKey, { expiresIn: "1h" });
+            user.accessToken = newAccessToken;
+            await user.save();
+        } catch (err) {
+            return res.status(500).send({ message: "Internal server error" });
+        }
+        return res.status(200).json({ accessToken: newAccessToken, admin });
+    }
+
+    return res.status(401).send({ message: "Token has expired" }); //disconnect
+};
+
+export { register, login, deleteAccount, verify };
