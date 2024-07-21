@@ -8,7 +8,7 @@ const router = Router();
 
 router.get("/category", getAllCategories);
 router.post("/category", createCategory);
-router.get("/thread", getAllThreadByCategory);
+router.get("/thread/:id", getAllThreadByCategory);
 router.post("/thread", createThread);
 router.post("/post", createPost);
 

@@ -32,15 +32,14 @@ const createThread = async (req: Request, res: Response) => {
 };
 
 const getAllThreadByCategory = async (req: Request, res: Response) => {
-    if (!req.query.category) return res.status(400).send({ message: "Category cannot be empty" });
-    const { category } = req.query;
-
-    try {
-        const threads = await Thread.find({ category: category });
-        return res.status(200).send(threads);
-    } catch (err: any) {
-        return res.status(500).send({ message: err.message });
-    }
+   if(!req.params.id) return res.status(400).send({ message: "Category id is required" });
+    const categoryId = req.params.id;
+   try {
+    const thread = await Thread.find({ category: categoryId });
+    return res.status(200).send(thread);
+   } catch (err: any) {
+    return res.status(500).send({ message: err.message });
+   }
 }
 
 export { createThread, getAllThreadByCategory };
