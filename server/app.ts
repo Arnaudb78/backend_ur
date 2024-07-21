@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import setupDBConnection from "./config/connection";
 import userRouter from "./routers/userRouter";
+import forumRouter from "./routers/forumRouter";
 
 dotenv.config();
 setupDBConnection();
@@ -21,6 +22,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.use("/users", userRouter);
+app.use("/forum", forumRouter);
 
 app.use((err: Error, req: Request, res: Response, next: Function) => {
     console.log("AAAAAA", err.message);

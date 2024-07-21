@@ -30,21 +30,34 @@ const register = async (req: Request, res: Response) => {
 };
 
 const login = async (req: Request, res: Response) => {
+    let admin = false;
     if (!req.body) return res.status(400).send({ message: "User cannot be empty" });
     const { mail, password } = req.body;
 
     const user = await User.findOne({ mail: mail });
     if (!user) return res.status(404).send({ message: "User not found" });
-
+    if (user.role === "admin") admin = true;
+    const userAccessToken = user.accessToken;
+    const userToken = user.token;
     if (!(await bcrypt.compare(password, user.password!))) return res.status(401).send({ message: "Password is incorrect" });
 
-    const userId = { userId: user._id };
-    const accessToken = jwt.sign(userId, secretKey, { expiresIn: "1h" });
-    user.accessToken = accessToken;
-
-    await user.save();
-
-    res.status(200).json({ accessToken });
+    const isUserAccessTokenExpired = verifyToken(userAccessToken!, 1);
+    if(!isUserAccessTokenExpired) return res.status(200).json({ accessToken: userAccessToken, admin });
+    const isUserTokenExpired = verifyToken(userToken!, 24);
+    if (!isUserTokenExpired) {
+        const userId = { userId: user._id };
+        const newAccessToken = jwt.sign(userId, secretKey, { expiresIn: "1h" });
+        user.accessToken = newAccessToken;
+        await user.save();
+        return res.status(200).json({ accessToken: newAccessToken, admin });
+    } else {
+        const newToken = jwt.sign({ userId: user._id }, secretKey, { expiresIn: "24h" });
+        user.token = newToken;
+        const newAccessToken = jwt.sign({ userId: user._id }, secretKey, { expiresIn: "1h" });
+        user.accessToken = newAccessToken;
+        await user.save();
+        return res.status(200).json({ accessToken: newAccessToken, admin });
+    }
 };
 
 const deleteAccount = async (req: Request, res: Response) => {
