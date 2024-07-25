@@ -42,4 +42,15 @@ const getAllThreadByCategory = async (req: Request, res: Response) => {
    }
 }
 
-export { createThread, getAllThreadByCategory };
+const getThreadById = async (req: Request, res: Response) => {
+    if(!req.params.id) return res.status(400).send({ message: "Thread id is required" });
+    const threadId = req.params.id;
+    try {
+        const thread = await Thread.findOne({ _id: threadId });
+        return res.status(200).send(thread);
+    } catch (err: any) {
+        return res.status(500).send({ message: err.message });
+    }
+}
+
+export { createThread, getAllThreadByCategory, getThreadById };
