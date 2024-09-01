@@ -6,7 +6,6 @@ import jwt from "jsonwebtoken";
 const secretKey = process.env.SECRET_KEY || "Default_Secret_Key";
 
 const register = async (req: Request, res: Response) => {
-    console.log(req.body);
     if (!req.body) return res.status(400).send({ message: "User cannot be empty" });
     const { firstname, lastname, mail, password, rules, newsletter } = req.body;
     if (await User.findOne({ mail: mail })) return res.status(409).send({ message: "User already exists" });
