@@ -130,7 +130,11 @@ const verify = async (req: Request, res: Response) => {
 };
 
 const getInformations = async (req: Request, res: Response) => {
-    console.log(req.body);
+    const { accessToken } = req.params;
+    if (!accessToken) return res.status(400).send({ message: "Token is required" });
+    const user = await User.findOne({ accessToken: accessToken });
+    if (!user) return res.status(404).send({ message: "User not found" });
+    res.status(200).json(user);
 };
 
 export { register, login, deleteAccount, verify, getInformations };
