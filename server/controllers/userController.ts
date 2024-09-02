@@ -41,7 +41,7 @@ const login = async (req: Request, res: Response) => {
     if (!(await bcrypt.compare(password, user.password!))) return res.status(401).send({ message: "Password is incorrect" });
 
     const isUserAccessTokenExpired = verifyToken(userAccessToken!, 1);
-    if(!isUserAccessTokenExpired) return res.status(200).json({ accessToken: userAccessToken, admin });
+    if (!isUserAccessTokenExpired) return res.status(200).json({ accessToken: userAccessToken, admin });
     const isUserTokenExpired = verifyToken(userToken!, 24);
     if (!isUserTokenExpired) {
         const userId = { userId: user._id };
@@ -126,7 +126,11 @@ const verify = async (req: Request, res: Response) => {
         return res.status(200).json({ accessToken: newAccessToken, admin });
     }
 
-    return res.status(401).send({ message: "Token has expired" }); //disconnect
+    return res.status(401).send({ message: "Token has expired" });
 };
 
-export { register, login, deleteAccount, verify };
+const getInformations = async (req: Request, res: Response) => {
+    console.log(req.body);
+};
+
+export { register, login, deleteAccount, verify, getInformations };

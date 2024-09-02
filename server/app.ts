@@ -14,7 +14,8 @@ const corsUrl = process.env.CORS_ORIGIN || "https://urban-roots.space";
 
 const app = express();
 
-app.use(cors({ origin: corsUrl }));
+// app.use(cors({ origin: corsUrl }));
+app.use(cors({ origin: "*" }));
 
 app.use(express.json());
 
