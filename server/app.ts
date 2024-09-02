@@ -14,13 +14,12 @@ const corsUrl = process.env.CORS_ORIGIN || "https://urban-roots.space";
 
 const app = express();
 
-// app.use(cors({ origin: corsUrl }));
-app.use(cors({ origin: "*" }));
+app.use(cors({ origin: corsUrl }));
 
 app.use(express.json());
 
 app.get("/", (req: Request, res: Response) => {
-    res.status(200).send("Backend online");
+    res.status(200).send("Backend online !");
 });
 
 app.use("/users", userRouter);
