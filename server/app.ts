@@ -6,6 +6,7 @@ import setupDBConnection from "./config/connection";
 import userRouter from "./routers/userRouter";
 import forumRouter from "./routers/forumRouter";
 import guideRouter from "./routers/guideRouter";
+import gardenRouter from "./routers/gardenRouter";
 
 dotenv.config();
 setupDBConnection();
@@ -14,7 +15,8 @@ const corsUrl = process.env.CORS_ORIGIN || "https://urban-roots.space";
 
 const app = express();
 
-app.use(cors({ origin: corsUrl }));
+// app.use(cors({ origin: corsUrl }));
+app.use(cors({ origin: "*" }));
 
 app.use(express.json());
 
@@ -25,6 +27,7 @@ app.get("/", (req: Request, res: Response) => {
 app.use("/users", userRouter);
 app.use("/forum", forumRouter);
 app.use("/guide", guideRouter);
+app.use("/garden", gardenRouter);
 
 app.use((err: Error, req: Request, res: Response, next: Function) => {
     console.log("AAAAAA", err.message);

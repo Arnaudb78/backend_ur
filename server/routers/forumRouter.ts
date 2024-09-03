@@ -3,7 +3,6 @@ import { createCategory, getAllCategories } from "../controllers/categoryControl
 import { createThread, getAllThreadByCategory, getThreadById } from "../controllers/threadController";
 import { createPost, getAllPostByThread } from "../controllers/postController";
 
-
 const router = Router();
 
 router.get("/category", getAllCategories);
