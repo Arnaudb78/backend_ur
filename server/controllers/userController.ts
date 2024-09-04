@@ -137,4 +137,13 @@ const getInformations = async (req: Request, res: Response) => {
     res.status(200).json(user);
 };
 
-export { register, login, deleteAccount, verify, getInformations };
+const findUserById = async (req: Request, res: Response) => {
+    console.log("findUserById");
+    const { id } = req.params;
+    if (!id) return res.status(400).send({ message: "Id is required" });
+    const user = await User.findById({_id : id});
+    if (!user) return res.status(404).send({ message: "User not found" });
+    res.status(200).json(user);
+}
+
+export { register, login, deleteAccount, verify, getInformations, findUserById };

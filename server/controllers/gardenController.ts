@@ -72,10 +72,15 @@ const findGardenByUser = async (req: Request, res: Response) => {
     res.status(200).send(gardens);
 }
 
+const findAllGardens = async (req: Request, res: Response) => {
+    const gardens = await Garden.find();
+    if(gardens.length === 0) return res.status(404).send({ message: "Gardens not found" });
+    res.status(200).send(gardens);
+}
 
 function transformAddress(street: string): string
 {
     return street.split(' ').join('+');
 }
 
-export { register, findGardenByUser };
+export { register, findGardenByUser, findAllGardens };
