@@ -88,8 +88,8 @@ const findGardenById = async (req: Request, res: Response) => {
         if (!address) return res.status(404).send({ message: "Address not found" });
         const owner = await User.findById(garden.owner);
         if (!owner) return res.status(404).send({ message: "Owner not found" });
-
-        res.status(200).send({ garden, address, owner });
+        const count = garden.Members.length;
+        res.status(200).send({ garden, address, owner, count });
     } catch (error) {
         console.error("Erreur lors de la recherche du jardin :", error);
         res.status(500).send({ message: "Erreur interne" });
@@ -106,12 +106,44 @@ const joinGarden = async (req: Request, res: Response) => {
     const garden = await Garden.findById(id);
     if (!garden) return res.status(404).send({ message: "Garden not found" });
 
-    if (garden.Members.length >= garden.capacity) return res.status(400).send({ message: "Garden is full" });
+    if (garden.Members.length >= garden.capacity) return res.status(405).send({ message: "Garden is full" });
 
     garden.Members.push(user);
     await garden.save();
     const count = garden.Members.length;
-    console.log(count);
+    res.status(200).send({ count });
+};
+
+const checkIfUserIsOnTheGarden = async (req: Request, res: Response) => {
+    const { accessToken, id } = req.body;
+    if (!accessToken || !id) return res.status(400).send({ message: "Id and token are required" });
+
+    const user = await User.findOne({ accessToken: accessToken });
+    if (!user) return res.status(404).send({ message: "User not found" });
+
+    const garden = await Garden.findById(id);
+    if (!garden) return res.status(404).send({ message: "Garden not found" });
+
+    const isOnTheGarden = garden.Members.includes(user._id);
+    res.status(200).send({ isOnTheGarden });
+};
+
+const leaveGarden = async (req: Request, res: Response) => {
+    const { accessToken, id } = req.body;
+    if (!accessToken || !id) return res.status(400).send({ message: "Id and token are required" });
+
+    const user = await User.findOne({ accessToken: accessToken });
+    if (!user) return res.status(404).send({ message: "User not found" });
+
+    const garden = await Garden.findById(id);
+    if (!garden) return res.status(404).send({ message: "Garden not found" });
+
+    const index = garden.Members.indexOf(user._id);
+    if (index > -1) {
+        garden.Members.splice(index, 1);
+    }
+    await garden.save();
+    const count = garden.Members.length;
     res.status(200).send({ count });
 };
 
@@ -119,4 +151,4 @@ function transformAddress(street: string): string {
     return street.split(" ").join("+");
 }
 
-export { register, findGardenByUser, findAllGardens, findGardenById, joinGarden };
+export { register, findGardenByUser, findAllGardens, findGardenById, joinGarden, checkIfUserIsOnTheGarden, leaveGarden };

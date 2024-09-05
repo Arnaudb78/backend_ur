@@ -1,5 +1,13 @@
 import { Router } from "express";
-import { findAllGardens, findGardenById, findGardenByUser, joinGarden, register } from "../controllers/gardenController";
+import {
+    checkIfUserIsOnTheGarden,
+    findAllGardens,
+    findGardenById,
+    findGardenByUser,
+    joinGarden,
+    leaveGarden,
+    register,
+} from "../controllers/gardenController";
 
 const router = Router();
 
@@ -8,5 +16,7 @@ router.get("/:accessToken", findGardenByUser);
 router.get("/", findAllGardens);
 router.post("/get", findGardenById);
 router.post("/join", joinGarden);
+router.post("/check", checkIfUserIsOnTheGarden);
+router.put("/leave", leaveGarden);
 
 export default router;
