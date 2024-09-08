@@ -21,7 +21,7 @@ app.use(cors({ origin: corsUrl }));
 app.use(express.json());
 
 app.get("/", (req: Request, res: Response) => {
-    res.status(200).send("Backend online");
+    res.status(200).send("Backend online !");
 });
 
 app.use("/users", userRouter);
